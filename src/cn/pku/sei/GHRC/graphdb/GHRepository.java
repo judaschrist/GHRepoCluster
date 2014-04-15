@@ -63,7 +63,7 @@ public class GHRepository {
 //			String key = it.next();
 //			s += key + ":" + node.getProperty(key) + ", ";
 //		}
-        return  "[" + s + "]" + "REPO" + node.getId();
+        return s + " REPO:" + node.getId() + " GH:" + getGHid();
     }
 
 	public void setName(String string) {

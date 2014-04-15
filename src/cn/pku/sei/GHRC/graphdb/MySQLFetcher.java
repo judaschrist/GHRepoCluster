@@ -11,6 +11,7 @@ import java.util.Properties;
 public class MySQLFetcher {
 	private Connection conn = null;
 	private Statement stmt = null;
+	private static final String WATCHED_BY_SAME_SQL = "SELECT count(*) FROM watchers WHERE repo_id = %id1% and user_id IN (SELECT user_id from watchers WHERE repo_id = %id2%)";
 	
 	public MySQLFetcher() {
 		Properties connectionProps = new Properties();
@@ -54,13 +55,23 @@ public class MySQLFetcher {
 	
 	public static void main(String[] args) throws SQLException {
 		MySQLFetcher fetcher = new MySQLFetcher();
-		ResultSet rs = fetcher.getColumn("projects", "id, url, name, description", "forked_from IS null");
-		while (rs.next()) {
-			System.out.println(rs.getInt(1) + " " + rs.getString(2) + " " + rs.getString(3) + " " + rs.getString(4));
-		}
-		System.out.println(rs.toString());
+		long ghid1 = 3;
+		long ghid2 = 1;
+		int s = fetcher.countWatchedBySameNum(ghid1, ghid2);
+		System.out.println(s);
 		fetcher.close();
 
+	}
+
+	public int countWatchedBySameNum(long ghid1, long ghid2) {
+		try {
+			ResultSet rs = stmt.executeQuery(WATCHED_BY_SAME_SQL.replace("%id1%", ghid1 + "").replace("%id2%", ghid2 + ""));
+			rs.next();
+			return rs.getInt(1);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			return 0;
+		}
 	}
 	
 }

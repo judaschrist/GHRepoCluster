@@ -28,21 +28,16 @@ import cern.colt.map.*;
 import cern.colt.list.*;
 import cern.jet.math.*;
 
-import weka.clusterers.AbstractClusterer;
 import weka.core.*;
-import weka.core.Capabilities.Capability;
 
 import java.util.*;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import cn.pku.sei.GHRC.graphdb.GHGraphBuilder;
 import cn.pku.sei.GHRC.graphdb.GHRepository;
-import cn.pku.sei.GHRC.graphdb.GHRepository.GHRelType;
 
 /**
  * <p>
@@ -171,12 +166,6 @@ import cn.pku.sei.GHRC.graphdb.GHRepository.GHRelType;
  */
 public class MySpectralClusterer{
 	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
-
-	/**
 	 * The points of the dataset
 	 */
 	/* protected DoubleMatrix2D v; */
@@ -206,6 +195,17 @@ public class MySpectralClusterer{
 	 * The using sparse matrix flag
 	 */
 	protected boolean useSparseMatrix = false;
+
+
+	protected double persentile = 50;
+
+	public double getPersentile() {
+		return persentile;
+	}
+
+	public void setPersentile(double persentile) {
+		this.persentile = persentile;
+	}
 
 	/**
 	 * Algorithm's option list
@@ -508,7 +508,7 @@ public class MySpectralClusterer{
 		 * DoubleFactory2D.dense.make(v1);
 		 */
 		final double sigma_sq = sigma * sigma;
-		int maxScore = 0;
+		DescriptiveStatistics stats = new DescriptiveStatistics();
 		// Sets up similarity matrix
 		try (Transaction tx = data.getGraphDb().beginTx()) {
 			
@@ -520,28 +520,26 @@ public class MySpectralClusterer{
 				score = GHRepository.getScore(rel);
 				id1 = (int) rel.getStartNode().getId();
 				id2 = (int) rel.getEndNode().getId();
-				double fixedScore = ((double)score)/400;
-				if (fixedScore >= 1) {
-					fixedScore = 0.99;
-				}
-				w.set(id1, id2, fixedScore);
-				w.set(id2, id1, fixedScore);
-				
-				if (score > maxScore) {
-					maxScore = score;
-				}
+				w.set(id1, id2, score);
+				w.set(id2, id1, score);
+				stats.addValue(score);
 			}
-			
 			tx.success();
 		}
+		
+		double median = stats.getPercentile(persentile);
 
+		System.out.println(median);
 		System.out.println("-------------Sim Matrix--------------");
-		System.out.println(maxScore);
+		
 		for (int i = 0; i < n; i++){
-			w.set(i, i, 1);
 			for (int j = 0; j < n; j++) {
+				double s = w.get(i, j)/median;
+				s = s >= 1 ? 0.99:s;
+				w.set(i, j, s);
 				System.out.print(w.get(i, j) + "\t");
 			}
+			w.set(i, i, 1);
 			System.out.println();
 		}
 		

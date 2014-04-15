@@ -30,11 +30,14 @@ public class SPClusterer {
 		GHGraphBuilder builder = new GHGraphBuilder();
 		MySpectralClusterer spClusterer = new MySpectralClusterer();
 
-		spClusterer.setAlphaStar(0.6);
+		spClusterer.setAlphaStar(0.99);
+		spClusterer.setPersentile(80);
+		
 		spClusterer.buildClusterer(builder);
 		System.out.println("--------------result-------------");
 		try (Transaction tx = builder.getGraphDb().beginTx()){
 			for (int i = 0; i < spClusterer.numberOfClusters(); i++) {
+				System.out.println();
 				System.out.println("Cluster " + i);
 				for (int j = 0; j < spClusterer.cluster.length; j++) {
 					if (spClusterer.cluster[j] == i) {
