@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -22,6 +25,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
+
+import scala.collection.generic.BitOperations.Int;
 
 import cn.pku.sei.GHRC.graphdb.GHRepository.GHRelType;
 
@@ -67,7 +72,8 @@ public class GHGraphBuilder {
         
         
         // START SNIPPET: transaction
-    	addWatchedBySameRel();
+//    	addWatchedBySameRel();
+    	addForkedBySameRel();
         try (Transaction tx = graphDb.beginTx())
         {
            
@@ -83,6 +89,14 @@ public class GHGraphBuilder {
 //				printToCSV(ghRepository);
 			}
             
+//            long ghid = 104307;
+//            System.out.println();
+//            System.out.println();
+//            List<GHRepository> relatedRepos = getMostRelatedRepos(reposMap.get(ghid));
+//            for (GHRepository ghRepository : relatedRepos) {
+//				System.out.println(ghRepository);
+//			}
+//            System.out.println(reposMap.get(ghid) + "-----------------");
 //            Node node = graphDb.getNodeById(0);
 //            Iterator<Relationship> it = node.getRelationships().iterator();
 //            while (it.hasNext()) {
@@ -93,24 +107,39 @@ public class GHGraphBuilder {
             
             
           Iterator<Relationship> relIt = GlobalGraphOperations.at(graphDb).getAllRelationships().iterator();
-//			while (relIt.hasNext()) {
-//				Relationship rel = relIt.next();
-//				System.out.println();
-//				System.out.println(rel.getStartNode().getProperty(GHRepository.GHID));
-//				System.out.println(rel.getProperty(GHRepository.NUM));
-//				System.out.println(rel.getEndNode().getProperty(GHRepository.GHID));
+			while (relIt.hasNext()) {
+				Relationship rel = relIt.next();
 //				rel.delete();
-//			}
+			}
 //			repos.get(0).createRelTo( repos.get(1), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
 //			repos.get(2).createRelTo( repos.get(3), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
 //			repos.get(4).createRelTo( repos.get(5), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
 //			repos.get(5).createRelTo( repos.get(6), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
 //			repos.get(6).createRelTo( repos.get(4), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
 //			repos.get(1).createRelTo( repos.get(2), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);          
+           
             tx.success();
-            
         }
     }
+
+    class relComparator implements Comparator<Relationship> {
+		@Override
+		public int compare(Relationship o1, Relationship o2) {
+			return GHRepository.getScore(o1) - GHRepository.getScore(o2);
+		}    	
+    }
+    
+	public List<GHRepository> getMostRelatedRepos(GHRepository ghRepository) {
+		Node node = ghRepository.getNode();
+		List<GHRepository> repos = new ArrayList<GHRepository>();
+		List<Relationship> rels = new ArrayList<>();
+		IteratorUtil.addToCollection(node.getRelationships(), rels);
+		Collections.sort(rels, new relComparator());
+		for (Relationship relationship : rels) {
+			repos.add(new GHRepository(relationship.getOtherNode(node)));
+		}
+		return repos;
+	}
 
 	private void printToCSV(GHRepository ghRepository) {
 		File file = new File("repos.csv");
@@ -143,7 +172,9 @@ public class GHGraphBuilder {
 				for (int j = i+1; j < n; j++) {
 					repo2 = new GHRepository(graphDb.getNodeById(j));
 					int sum = fetcher.countWatchedBySameNum(Long.parseLong(repo1.getGHid()), Long.parseLong(repo2.getGHid()));
-					repo1.createRelTo(repo2, GHRelType.WATCHED_BY_SAME).setProperty(GHRepository.NUM, sum);
+					if (sum > 0) {
+						repo1.createRelTo(repo2, GHRelType.WATCHED_BY_SAME).setProperty(GHRepository.NUM, sum);
+					}
 					System.out.println(sum);
 				}
 				tx.success();
@@ -152,7 +183,31 @@ public class GHGraphBuilder {
 		fetcher.close();
 	}
 
-
+	private void addForkedBySameRel() {
+		MySQLFetcher fetcher = new MySQLFetcher();
+		
+		int n = reposMap.size();
+		GHRepository repo1;
+		GHRepository repo2;
+		
+		for (int i = 0; i < n; i++) {
+			try (Transaction tx = graphDb.beginTx()) {
+				repo1 = new GHRepository(graphDb.getNodeById(i));
+				System.out.println("-----------------" + repo1 + "--------------------");
+				for (int j = i+1; j < n; j++) {
+					repo2 = new GHRepository(graphDb.getNodeById(j));
+					int sum = fetcher.countForkedBySameNum(Long.parseLong(repo1.getGHid()), Long.parseLong(repo2.getGHid()));
+					if (sum > 0) {
+						repo1.createRelTo(repo2, GHRelType.FORKED_BY_SAME).setProperty(GHRepository.NUM, sum);
+					}
+					System.out.println(sum);
+				}
+				tx.success();
+			}
+		}
+		fetcher.close();
+	}
+	
 	private void generateRepoNodes() {
 		MySQLFetcher fetcher = new MySQLFetcher();
 		ResultSet rs = fetcher.getColumn("projects", "id, url, name, description", "forked_from IS null");

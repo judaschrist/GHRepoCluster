@@ -12,6 +12,7 @@ public class MySQLFetcher {
 	private Connection conn = null;
 	private Statement stmt = null;
 	private static final String WATCHED_BY_SAME_SQL = "SELECT count(*) FROM watchers WHERE repo_id = %id1% and user_id IN (SELECT user_id from watchers WHERE repo_id = %id2%)";
+	private static final String FORKED_BY_SAME_SQL = "SELECT count(*) FROM projects WHERE forked_from = %id1% and owner_id IN (SELECT owner_id from projects WHERE forked_from = %id2%)";
 	
 	public MySQLFetcher() {
 		Properties connectionProps = new Properties();
@@ -55,9 +56,9 @@ public class MySQLFetcher {
 	
 	public static void main(String[] args) throws SQLException {
 		MySQLFetcher fetcher = new MySQLFetcher();
-		long ghid1 = 3;
-		long ghid2 = 1;
-		int s = fetcher.countWatchedBySameNum(ghid1, ghid2);
+		long ghid1 = 1;
+		long ghid2 = 9;
+		int s = fetcher.countForkedBySameNum(ghid1, ghid2);
 		System.out.println(s);
 		fetcher.close();
 
@@ -73,5 +74,18 @@ public class MySQLFetcher {
 			return 0;
 		}
 	}
+	
+	public int countForkedBySameNum(long ghid1, long ghid2) {
+		try {
+			ResultSet rs = stmt.executeQuery(FORKED_BY_SAME_SQL.replace("%id1%", ghid1 + "").replace("%id2%", ghid2 + ""));
+			rs.next();
+			return rs.getInt(1);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			return 0;
+		}
+	}
+	
+	
 	
 }
