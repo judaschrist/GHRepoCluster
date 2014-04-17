@@ -509,27 +509,36 @@ public class MySpectralClusterer{
 		 */
 		final double sigma_sq = sigma * sigma;
 		DescriptiveStatistics stats = new DescriptiveStatistics();
+		stats.addValue(1);
 		// Sets up similarity matrix
 		try (Transaction tx = data.getGraphDb().beginTx()) {
 			
 			Iterator<Relationship> rels = data.getAllRelationships();
 			int id1, id2;
 			int score;
+			int previousScore;
 			while (rels.hasNext()) {
 				Relationship rel = rels.next();
 				score = GHRepository.getScore(rel);
 				id1 = (int) rel.getStartNode().getId();
 				id2 = (int) rel.getEndNode().getId();
-				w.set(id1, id2, score);
-				w.set(id2, id1, score);
-				stats.addValue(score);
+				previousScore = (int) w.get(id2, id1);
+				w.set(id1, id2, score + previousScore);
+				w.set(id2, id1, score + previousScore);
 			}
 			tx.success();
 		}
 		
+		for (int i = 0; i < n; i++){
+			for (int j = 0; j < n; j++) {
+				double s = w.get(i, j);
+				if (s > 0) {
+					stats.addValue(s);
+				}
+			}
+		}
+		
 		double median = stats.getPercentile(persentile);
-
-		System.out.println(median);
 		System.out.println("-------------Sim Matrix--------------");
 		
 		for (int i = 0; i < n; i++){
@@ -542,6 +551,8 @@ public class MySpectralClusterer{
 			w.set(i, i, 1);
 			System.out.println();
 		}
+
+		System.out.println(median);
 		
 		// Compute point partitions
 		final int[][] p = partition(w /* , alpha_star */);
