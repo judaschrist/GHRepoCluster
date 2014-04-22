@@ -30,7 +30,7 @@ public class SPClusterer {
 		GHGraphBuilder builder = new GHGraphBuilder();
 		MySpectralClusterer spClusterer = new MySpectralClusterer();
 
-		spClusterer.setAlphaStar(0.99);
+		spClusterer.setAlphaStar(0.6);
 		spClusterer.setPersentile(80);
 		
 		spClusterer.buildClusterer(builder);

@@ -31,7 +31,7 @@ import scala.collection.generic.BitOperations.Int;
 import cn.pku.sei.GHRC.graphdb.GHRepository.GHRelType;
 
 public class GHGraphBuilder {
-    private static final String DB_PATH = "D:/Documents/neo4j/GHRepos";
+    private static final String DB_PATH = "D:/Documents/neo4j/MSR14Repos";
     String greeting;
     // START SNIPPET: vars
     private GraphDatabaseService graphDb = null;
@@ -73,10 +73,10 @@ public class GHGraphBuilder {
         
         // START SNIPPET: transaction
 //    	addWatchedBySameRel();
-    	addForkedBySameRel();
+//    	addForkedBySameRel();
+    	addBySameRels();
         try (Transaction tx = graphDb.beginTx())
         {
-           
 
 //        	generateRepoNodes();
 //        	System.out.println(inString);
@@ -174,6 +174,34 @@ public class GHGraphBuilder {
 					int sum = fetcher.countWatchedBySameNum(Long.parseLong(repo1.getGHid()), Long.parseLong(repo2.getGHid()));
 					if (sum > 0) {
 						repo1.createRelTo(repo2, GHRelType.WATCHED_BY_SAME).setProperty(GHRepository.NUM, sum);
+					}
+					System.out.println(sum);
+				}
+				tx.success();
+			}
+		}
+		fetcher.close();
+	}
+	
+	private void addBySameRels() {
+		MySQLFetcher fetcher = new MySQLFetcher();
+		
+		int n = reposMap.size();
+		GHRepository repo1;
+		GHRepository repo2;
+		int sum = 0;
+		
+		for (int i = 0; i < n; i++) {
+			try (Transaction tx = graphDb.beginTx()) {
+				repo1 = new GHRepository(graphDb.getNodeById(i));
+				long ghid1 = Long.parseLong(repo1.getGHid());
+				System.out.println("-----------------" + repo1 + "--------------------");
+				for (int j = i+1; j < n; j++) {
+					repo2 = new GHRepository(graphDb.getNodeById(j));
+					long ghid2 = Long.parseLong(repo2.getGHid());
+					sum = fetcher.countMemberBySameNum(ghid1, ghid2);
+					if (sum > 0) {
+						repo1.createRelTo(repo2, GHRelType.MEMBER_BY_SAME).setProperty(GHRepository.NUM, sum);
 					}
 					System.out.println(sum);
 				}

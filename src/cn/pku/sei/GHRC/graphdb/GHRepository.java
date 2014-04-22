@@ -18,7 +18,9 @@ public class GHRepository {
 	public static enum GHRelType implements RelationshipType
     {
         WATCHED_BY_SAME,
-    	CONTRIBUTE_BY_SAME, FORKED_BY_SAME,
+    	FORKED_BY_SAME, 
+    	ISSUE_COMMENTED_BY_SAME, 
+    	PR_BY_SAME, MEMBER_BY_SAME,
     }
 	
 	public static final String NAME = "name";
@@ -87,8 +89,14 @@ public class GHRepository {
 		int num = (Integer)rel.getProperty(NUM);
 		int multiplier = 0;
 		if (rel.isType(GHRelType.WATCHED_BY_SAME)) {
-			multiplier = 1;
+			multiplier = 0;
 		} else if (rel.isType(GHRelType.FORKED_BY_SAME)) {
+			multiplier = 0;
+		} else if (rel.isType(GHRelType.ISSUE_COMMENTED_BY_SAME)) {
+			multiplier = 0;
+		} else if (rel.isType(GHRelType.PR_BY_SAME)) {
+			multiplier = 0;
+		} else if (rel.isType(GHRelType.MEMBER_BY_SAME)) {
 			multiplier = 1;
 		}
 		return num * multiplier;
