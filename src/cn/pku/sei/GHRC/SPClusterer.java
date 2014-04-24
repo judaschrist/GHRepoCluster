@@ -22,7 +22,7 @@ public class SPClusterer {
 		MySpectralClusterer spClusterer = new MySpectralClusterer();
 
 		spClusterer.setAlphaStar(0.95);
-		spClusterer.setPersentile(100);
+		spClusterer.setPersentile(90);
 		
 		spClusterer.buildClusterer(builder);
 		System.out.println("--------------result-------------");

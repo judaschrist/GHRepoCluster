@@ -543,7 +543,7 @@ public class MySpectralClusterer{
 		
 		for (int i = 0; i < n; i++){
 			for (int j = 0; j < n; j++) {
-				double s = w.get(i, j) * 10;
+				double s = w.get(i, j) / median;
 				s = s >= 1 ? 0.99:s;
 				w.set(i, j, s);
 				System.out.print(w.get(i, j) + "\t");
