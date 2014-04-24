@@ -26,8 +26,10 @@ public class MySQLFetcher {
 			"WHERE a.user_id = b.user_id";
 	
 	private static final String WATCHER_SQL = "SELECT user_id from watchers WHERE repo_id = %id% ORDER BY user_id";
-
+	private static final String FORK_SQL = "SELECT owner_id FROM projects WHERE forked_from = %id% ORDER BY owner_id";
+	
 	private static ResultSet users;
+	private static int USER_COUNT;
 
 	public MySQLFetcher() {
 		Properties connectionProps = new Properties();
@@ -41,6 +43,9 @@ public class MySQLFetcher {
 			stmt1 = conn.createStatement();
 			stmt2 = conn.createStatement();
 			users = conn.createStatement().executeQuery("SELECT id from users order by id");
+			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
+			counts.next();
+			USER_COUNT = counts.getInt(1);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -75,17 +80,17 @@ public class MySQLFetcher {
 	public static void main(String[] args) throws SQLException {
 		MySQLFetcher fetcher = new MySQLFetcher();
 
-		ArrayRealVector s = fetcher.getWatchVector(1);
-		ArrayRealVector s2 = fetcher.getWatchVector(2);
+		ArrayRealVector s = fetcher.getForkVector(1);
+		ArrayRealVector s2 = fetcher.getForkVector(2);
 		System.out.println(s.cosine(s2));
+		System.out.println(s.dotProduct(s));
+		System.out.println(s.getDistance(s));
 		fetcher.close();
 	}
 	
 	private ArrayRealVector getUserVector(long repoId, String SQL) {
 		try {
-			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
-			counts.next();
-			double[] ints = new double[counts.getInt(1)];
+			double[] ints = new double[USER_COUNT];
 			ResultSet watchers = stmt2.executeQuery(SQL.replace("%id%", repoId+""));
 			if(watchers.next()){
 				int i = 0;
@@ -110,6 +115,10 @@ public class MySQLFetcher {
 	
 	public ArrayRealVector getWatchVector(long repoId) {
 		return getUserVector(repoId, WATCHER_SQL);
+	}
+	
+	public ArrayRealVector getForkVector(long repoId) {
+		return getUserVector(repoId, FORK_SQL);
 	}
 
 	public int countWatchedBySameNum(long ghid1, long ghid2) {
