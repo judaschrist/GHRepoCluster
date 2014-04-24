@@ -516,13 +516,16 @@ public class MySpectralClusterer{
 			Iterator<Relationship> rels = data.getAllRelationships();
 			int id1, id2;
 			double score;
-			int previousScore;
+			double previousScore;
 			while (rels.hasNext()) {
 				Relationship rel = rels.next();
 				score = GHRepository.getScore(rel);
+				
+//				score = Math.exp(-(score * score) / (2 * sigma_sq));
+				
 				id1 = (int) rel.getStartNode().getId();
 				id2 = (int) rel.getEndNode().getId();
-				previousScore = (int) w.get(id2, id1);
+				previousScore = w.get(id2, id1);
 				w.set(id1, id2, score + previousScore);
 				w.set(id2, id1, score + previousScore);
 			}
