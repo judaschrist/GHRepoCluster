@@ -24,7 +24,10 @@ public class MySQLFetcher {
 			"(SELECT DISTINCT user_id FROM issue_comments where issue_id in (	" +
 			"SELECT issue_id FROM issues WHERE repo_id = %id2%)) b " +
 			"WHERE a.user_id = b.user_id";
+	
+	private static final String WATCHER_SQL = "SELECT user_id from watchers WHERE repo_id = %id% ORDER BY user_id";
 
+	private static ResultSet users;
 
 	public MySQLFetcher() {
 		Properties connectionProps = new Properties();
@@ -37,6 +40,7 @@ public class MySQLFetcher {
 			stmt = conn.createStatement();
 			stmt1 = conn.createStatement();
 			stmt2 = conn.createStatement();
+			users = conn.createStatement().executeQuery("SELECT id from users order by id");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -77,14 +81,12 @@ public class MySQLFetcher {
 		fetcher.close();
 	}
 	
-	public ArrayRealVector getWatchVector(long repoId) {
+	private ArrayRealVector getUserVector(long repoId, String SQL) {
 		try {
 			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
 			counts.next();
-//			System.out.println("123");
 			double[] ints = new double[counts.getInt(1)];
-			ResultSet users = stmt1.executeQuery("SELECT id from users order by id");
-			ResultSet watchers = stmt2.executeQuery("SELECT user_id from watchers WHERE repo_id = " + repoId + " ORDER BY user_id");
+			ResultSet watchers = stmt2.executeQuery(SQL.replace("%id%", repoId+""));
 			if(watchers.next()){
 				int i = 0;
 				while (users.next()) {
@@ -97,12 +99,17 @@ public class MySQLFetcher {
 					} 
 					i++;
 				}
-			}			
+			}
+			users.beforeFirst();
 			return new ArrayRealVector(ints);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public ArrayRealVector getWatchVector(long repoId) {
+		return getUserVector(repoId, WATCHER_SQL);
 	}
 
 	public int countWatchedBySameNum(long ghid1, long ghid2) {
