@@ -1,15 +1,10 @@
 package cn.pku.sei.GHRC.graphdb;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
-
-import cn.pku.sei.GHRC.graphdb.GHRepository.GHRelType;
 
 public class GHRepository {
 	
@@ -59,7 +54,7 @@ public class GHRepository {
     @Override
     public String toString()
     {
-    	Iterator<String> it = node.getPropertyKeys().iterator();
+//    	Iterator<String> it = node.getPropertyKeys().iterator();
     	String s = node.getProperty(NAME)+":\t"+node.getProperty(DESCRIPTION);
 //    	while (it.hasNext()) {
 //			String key = it.next();
@@ -85,11 +80,11 @@ public class GHRepository {
 		return node.getRelationships(Direction.OUTGOING).iterator();
 	}
 
-	public static int getScore(Relationship rel) {
-		int num = (Integer)rel.getProperty(NUM);
-		int multiplier = 0;
+	public static double getScore(Relationship rel) {
+		double num = (double)rel.getProperty(NUM);
+		double multiplier = 0;
 		if (rel.isType(GHRelType.WATCHED_BY_SAME)) {
-			multiplier = 0;
+			multiplier = 1;
 		} else if (rel.isType(GHRelType.FORKED_BY_SAME)) {
 			multiplier = 0;
 		} else if (rel.isType(GHRelType.ISSUE_COMMENTED_BY_SAME)) {
@@ -97,7 +92,7 @@ public class GHRepository {
 		} else if (rel.isType(GHRelType.PR_BY_SAME)) {
 			multiplier = 0;
 		} else if (rel.isType(GHRelType.MEMBER_BY_SAME)) {
-			multiplier = 1;
+			multiplier = 0;
 		}
 		return num * multiplier;
 	}

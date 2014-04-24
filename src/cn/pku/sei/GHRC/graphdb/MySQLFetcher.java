@@ -5,12 +5,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 import java.util.Properties;
+
+import org.apache.commons.math3.linear.ArrayRealVector;
 
 public class MySQLFetcher {
 	private Connection conn = null;
 	private Statement stmt = null;
+	private Statement stmt1 = null;
+	private Statement stmt2 = null;
 	private static final String MEMBER_BY_SAME_SQL = "SELECT count(user_id) FROM project_members WHERE repo_id = %id1% AND user_id IN (SELECT user_id FROM project_members WHERE repo_id = %id2%)";
 	private static final String PR_BY_SAME_SQL = "SELECT count(DISTINCT user_id) FROM pull_requests WHERE base_repo_id = %id1% AND user_id in (SELECT user_id FROM pull_requests WHERE base_repo_id = %id2%)";
 	private static final String WATCHED_BY_SAME_SQL = "SELECT count(*) FROM watchers WHERE repo_id = %id1% and user_id IN (SELECT user_id from watchers WHERE repo_id = %id2%)";
@@ -32,6 +35,8 @@ public class MySQLFetcher {
 			conn = DriverManager.getConnection(
 					"jdbc:mysql://localhost:3306/msr14", connectionProps);
 			stmt = conn.createStatement();
+			stmt1 = conn.createStatement();
+			stmt2 = conn.createStatement();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -65,20 +70,39 @@ public class MySQLFetcher {
 	
 	public static void main(String[] args) throws SQLException {
 		MySQLFetcher fetcher = new MySQLFetcher();
-		long ghid1 = 5;
-		long ghid2 = 8;
-		int s = fetcher.countIssueCommentedBySameNum(ghid1, ghid2);
-		System.out.println(s);
-		s = fetcher.countPrBySameNum(ghid1, ghid2);
-		System.out.println(s);
-		s = fetcher.countForkedBySameNum(ghid1, ghid2);
-		System.out.println(s);
-		s = fetcher.countWatchedBySameNum(ghid1, ghid2);
-		System.out.println(s);
-		s = fetcher.countMemberBySameNum(ghid1, ghid2);
-		System.out.println(s);
-		fetcher.close();
 
+		ArrayRealVector s = fetcher.getWatchVector(1);
+		ArrayRealVector s2 = fetcher.getWatchVector(2);
+		System.out.println(s.cosine(s2));
+		fetcher.close();
+	}
+	
+	public ArrayRealVector getWatchVector(long repoId) {
+		try {
+			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
+			counts.next();
+//			System.out.println("123");
+			double[] ints = new double[counts.getInt(1)];
+			ResultSet users = stmt1.executeQuery("SELECT id from users order by id");
+			ResultSet watchers = stmt2.executeQuery("SELECT user_id from watchers WHERE repo_id = " + repoId + " ORDER BY user_id");
+			if(watchers.next()){
+				int i = 0;
+				while (users.next()) {
+					long id = users.getLong(1);
+					if (watchers.getLong(1) == id) {
+						ints[i] = 1;
+						if (!watchers.next()) {
+							break;
+						}
+					} 
+					i++;
+				}
+			}			
+			return new ArrayRealVector(ints);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public int countWatchedBySameNum(long ghid1, long ghid2) {
@@ -87,7 +111,6 @@ public class MySQLFetcher {
 			rs.next();
 			return rs.getInt(1);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			return 0;
 		}
 	}
@@ -98,7 +121,6 @@ public class MySQLFetcher {
 			rs.next();
 			return rs.getInt(1);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			return 0;
 		}
 	}
@@ -109,7 +131,6 @@ public class MySQLFetcher {
 			rs.next();
 			return rs.getInt(1);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			return 0;
 		}
 	}
@@ -120,7 +141,6 @@ public class MySQLFetcher {
 			rs.next();
 			return rs.getInt(1);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			return 0;
 		}
 	}
@@ -131,7 +151,6 @@ public class MySQLFetcher {
 			rs.next();
 			return rs.getInt(1);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			return 0;
 		}
 	}

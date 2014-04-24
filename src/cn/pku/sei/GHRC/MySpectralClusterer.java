@@ -497,7 +497,7 @@ public class MySpectralClusterer{
 	 * @param data
 	 *            set of instances serving as training data
 	 */
-	public void buildClusterer(@SuppressWarnings("hiding") final GHGraphBuilder data) {
+	public void buildClusterer(final GHGraphBuilder data) {
 		setData(data);
 		final int n = data.getNodeNum();
 		final DoubleMatrix2D w = useSparseMatrix ? DoubleFactory2D.sparse.make(
@@ -515,7 +515,7 @@ public class MySpectralClusterer{
 			
 			Iterator<Relationship> rels = data.getAllRelationships();
 			int id1, id2;
-			int score;
+			double score;
 			int previousScore;
 			while (rels.hasNext()) {
 				Relationship rel = rels.next();
@@ -543,7 +543,7 @@ public class MySpectralClusterer{
 		
 		for (int i = 0; i < n; i++){
 			for (int j = 0; j < n; j++) {
-				double s = w.get(i, j)/median;
+				double s = w.get(i, j) * 10;
 				s = s >= 1 ? 0.99:s;
 				w.set(i, j, s);
 				System.out.print(w.get(i, j) + "\t");

@@ -1,18 +1,9 @@
 package cn.pku.sei.GHRC;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.neo4j.graphdb.Transaction;
 
 import cn.pku.sei.GHRC.graphdb.GHGraphBuilder;
 
-import weka.core.Instance;
-import weka.core.Instances;
-import weka.core.converters.ArffLoader;
-import weka.datagenerators.ClusterDefinition;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.Remove;
 
 public class SPClusterer {
 	public static void main(String[] args) throws Exception {
@@ -30,8 +21,8 @@ public class SPClusterer {
 		GHGraphBuilder builder = new GHGraphBuilder();
 		MySpectralClusterer spClusterer = new MySpectralClusterer();
 
-		spClusterer.setAlphaStar(0.6);
-		spClusterer.setPersentile(80);
+		spClusterer.setAlphaStar(0.95);
+		spClusterer.setPersentile(100);
 		
 		spClusterer.buildClusterer(builder);
 		System.out.println("--------------result-------------");

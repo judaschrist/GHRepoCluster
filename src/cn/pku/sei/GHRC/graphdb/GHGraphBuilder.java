@@ -1,6 +1,5 @@
 package cn.pku.sei.GHRC.graphdb;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -8,30 +7,27 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.exception.MathArithmeticException;
+import org.apache.commons.math3.linear.ArrayRealVector;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import scala.collection.generic.BitOperations.Int;
-
 import cn.pku.sei.GHRC.graphdb.GHRepository.GHRelType;
 
 public class GHGraphBuilder {
-    private static final String DB_PATH = "D:/Documents/neo4j/MSR14Repos";
+    private static final String DB_PATH = "D:/Documents/neo4j/MSR14ReposCosineSim";
     String greeting;
     // START SNIPPET: vars
     private GraphDatabaseService graphDb = null;
@@ -74,7 +70,7 @@ public class GHGraphBuilder {
         // START SNIPPET: transaction
 //    	addWatchedBySameRel();
 //    	addForkedBySameRel();
-    	addBySameRels();
+//    	addBySameRels();
         try (Transaction tx = graphDb.beginTx())
         {
 
@@ -83,27 +79,18 @@ public class GHGraphBuilder {
         	
             Iterator<GHRepository> repoIt = reposMap.values().iterator();
         	
-            while (repoIt.hasNext()) {
-				GHRepository ghRepository = (GHRepository) repoIt.next();
-				System.out.println(ghRepository.toString());
-//				printToCSV(ghRepository);
-			}
+//            while (repoIt.hasNext()) {
+//				GHRepository ghRepository = (GHRepository) repoIt.next();
+//				System.out.println(ghRepository.toString());
+//			}
             
-//            long ghid = 104307;
-//            System.out.println();
-//            System.out.println();
-//            List<GHRepository> relatedRepos = getMostRelatedRepos(reposMap.get(ghid));
-//            for (GHRepository ghRepository : relatedRepos) {
-//				System.out.println(ghRepository);
-//			}
-//            System.out.println(reposMap.get(ghid) + "-----------------");
-//            Node node = graphDb.getNodeById(0);
-//            Iterator<Relationship> it = node.getRelationships().iterator();
-//            while (it.hasNext()) {
-//				Relationship relationship = it.next();
-//				System.out.println(relationship.getOtherNode(node).getProperty(GHRepository.GHID) + " " + relationship.getProperty(GHRepository.NUM) + " " + relationship.getType());
-//				
-//			}
+            long ghid = 6;
+            System.out.println();
+            System.out.println();
+            List<GHRepository> relatedRepos = getMostRelatedRepos(reposMap.get(ghid));
+            for (GHRepository ghRepository : relatedRepos) {
+				System.out.println(ghRepository);
+			}
             
             
           Iterator<Relationship> relIt = GlobalGraphOperations.at(graphDb).getAllRelationships().iterator();
@@ -125,7 +112,7 @@ public class GHGraphBuilder {
     class relComparator implements Comparator<Relationship> {
 		@Override
 		public int compare(Relationship o1, Relationship o2) {
-			return GHRepository.getScore(o1) - GHRepository.getScore(o2);
+			return (int) (GHRepository.getScore(o1) - GHRepository.getScore(o2));
 		}    	
     }
     
@@ -190,20 +177,28 @@ public class GHGraphBuilder {
 		GHRepository repo1;
 		GHRepository repo2;
 		int sum = 0;
+		double sim = 0;
 		
 		for (int i = 0; i < n; i++) {
 			try (Transaction tx = graphDb.beginTx()) {
 				repo1 = new GHRepository(graphDb.getNodeById(i));
 				long ghid1 = Long.parseLong(repo1.getGHid());
+				ArrayRealVector v1 = fetcher.getWatchVector(ghid1);
 				System.out.println("-----------------" + repo1 + "--------------------");
 				for (int j = i+1; j < n; j++) {
 					repo2 = new GHRepository(graphDb.getNodeById(j));
+					System.out.println(repo2);
 					long ghid2 = Long.parseLong(repo2.getGHid());
-					sum = fetcher.countMemberBySameNum(ghid1, ghid2);
-					if (sum > 0) {
-						repo1.createRelTo(repo2, GHRelType.MEMBER_BY_SAME).setProperty(GHRepository.NUM, sum);
+					ArrayRealVector v2 = fetcher.getWatchVector(ghid2);
+					try {
+						sim = v1.cosine(v2);
+					} catch (MathArithmeticException e) {
+						sim = 0;
 					}
-					System.out.println(sum);
+					if (sim > 0) {
+						repo1.createRelTo(repo2, GHRelType.WATCHED_BY_SAME).setProperty(GHRepository.NUM, sim);
+					}
+					System.out.println(sim);
 				}
 				tx.success();
 			}
