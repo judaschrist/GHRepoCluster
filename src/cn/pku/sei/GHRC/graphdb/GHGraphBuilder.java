@@ -78,27 +78,31 @@ public class GHGraphBuilder {
 //        	generateRepoNodes();
 //        	System.out.println(inString);
         	
-            Iterator<GHRepository> repoIt = reposMap.values().iterator();
+//            Iterator<GHRepository> repoIt = reposMap.values().iterator();
         	
 //            while (repoIt.hasNext()) {
 //				GHRepository ghRepository = (GHRepository) repoIt.next();
 //				System.out.println(ghRepository.toString());
 //			}
             
-//            long ghid = 76946;
-//            System.out.println();
-//            System.out.println();
-//            List<GHRepository> relatedRepos = getMostRelatedRepos(reposMap.get(ghid));
-//            for (GHRepository ghRepository : relatedRepos) {
-//				System.out.println(ghRepository);
-//			}
-            
-            
-          Iterator<Relationship> relIt = GlobalGraphOperations.at(graphDb).getAllRelationships().iterator();
-			while (relIt.hasNext()) {
-				Relationship rel = relIt.next();
-//				rel.delete();
+            long ghid = 25875;
+            System.out.println();
+            System.out.println();
+            List<GHRepository> relatedRepos = getMostRelatedRepos(reposMap.get(ghid));
+            for (GHRepository ghRepository : relatedRepos) {
+				System.out.println(ghRepository);
 			}
+            
+            
+//        	Iterator<Relationship> relIt = GlobalGraphOperations.at(graphDb).getAllRelationships().iterator();
+//			while (relIt.hasNext()) {
+//				Relationship rel = relIt.next();
+//				if (rel.isType(GHRelType.ISSUE_COMMENTED_BY_SAME)) {
+//					rel.delete();
+//					System.out.println("del!");
+//				}
+//				
+//			}
 //			repos.get(0).createRelTo( repos.get(1), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
 //			repos.get(2).createRelTo( repos.get(3), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
 //			repos.get(4).createRelTo( repos.get(5), GHRelType.WATCHED_BY_SAME ).setProperty(GHRepository.NUM, 1);
@@ -108,7 +112,42 @@ public class GHGraphBuilder {
            
             tx.success();
         }
-    }
+    }    
+	
+	private void addBySameRels() {
+		MySQLFetcher fetcher = new MySQLFetcher();
+		
+		int n = reposMap.size();
+		GHRepository repo1;
+		GHRepository repo2;
+		double sim = 0;
+		
+		for (int i = 0; i < n; i++) {
+			try (Transaction tx = graphDb.beginTx()) {
+				repo1 = new GHRepository(graphDb.getNodeById(i));
+				long ghid1 = Long.parseLong(repo1.getGHid());
+				ArrayRealVector v1 = fetcher.getMemberVector(ghid1);
+				System.out.println("-----------------" + repo1 + "--------------------");
+				for (int j = i+1; j < n; j++) {
+					repo2 = new GHRepository(graphDb.getNodeById(j));
+					System.out.println(repo2);
+					long ghid2 = Long.parseLong(repo2.getGHid());
+					ArrayRealVector v2 = fetcher.getMemberVector(ghid2);
+					try {
+						sim = v1.cosine(v2);
+					} catch (MathArithmeticException e) {
+						sim = 0;
+					}
+					if (sim > 0) {
+						repo1.createRelTo(repo2, GHRelType.MEMBER_BY_SAME).setProperty(GHRepository.NUM, sim);
+					}
+					System.out.println(sim);
+				}
+				tx.success();
+			}
+		}
+		fetcher.close();
+	}
 
     class relComparator implements Comparator<Relationship> {
 		@Override
@@ -193,41 +232,6 @@ public class GHGraphBuilder {
 					dist = v1.getDistance(v2); 
 					repo1.createRelTo(repo2, GHRelType.WATCHED_BY_SAME).setProperty(GHRepository.NUM, dist);
 					System.out.println(dist);
-				}
-				tx.success();
-			}
-		}
-		fetcher.close();
-	}
-	
-	private void addBySameRels() {
-		MySQLFetcher fetcher = new MySQLFetcher();
-		
-		int n = reposMap.size();
-		GHRepository repo1;
-		GHRepository repo2;
-		double sim = 0;
-		
-		for (int i = 0; i < n; i++) {
-			try (Transaction tx = graphDb.beginTx()) {
-				repo1 = new GHRepository(graphDb.getNodeById(i));
-				long ghid1 = Long.parseLong(repo1.getGHid());
-				ArrayRealVector v1 = fetcher.getForkVector(ghid1);
-				System.out.println("-----------------" + repo1 + "--------------------");
-				for (int j = i+1; j < n; j++) {
-					repo2 = new GHRepository(graphDb.getNodeById(j));
-					System.out.println(repo2);
-					long ghid2 = Long.parseLong(repo2.getGHid());
-					ArrayRealVector v2 = fetcher.getForkVector(ghid2);
-					try {
-						sim = v1.cosine(v2);
-					} catch (MathArithmeticException e) {
-						sim = 0;
-					}
-					if (sim > 0) {
-						repo1.createRelTo(repo2, GHRelType.FORKED_BY_SAME).setProperty(GHRepository.NUM, sim);
-					}
-					System.out.println(sim);
 				}
 				tx.success();
 			}

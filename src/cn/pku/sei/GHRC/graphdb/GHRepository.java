@@ -84,11 +84,11 @@ public class GHRepository {
 		double num = (double)rel.getProperty(NUM);
 		double multiplier = 0;
 		if (rel.isType(GHRelType.WATCHED_BY_SAME)) {
-			multiplier = 1;
-		} else if (rel.isType(GHRelType.FORKED_BY_SAME)) {
-			multiplier = 1;
-		} else if (rel.isType(GHRelType.ISSUE_COMMENTED_BY_SAME)) {
 			multiplier = 0;
+		} else if (rel.isType(GHRelType.FORKED_BY_SAME)) {
+			multiplier = 0;
+		} else if (rel.isType(GHRelType.ISSUE_COMMENTED_BY_SAME)) {
+			multiplier = 1;
 		} else if (rel.isType(GHRelType.PR_BY_SAME)) {
 			multiplier = 0;
 		} else if (rel.isType(GHRelType.MEMBER_BY_SAME)) {

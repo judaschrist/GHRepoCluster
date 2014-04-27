@@ -27,6 +27,10 @@ public class MySQLFetcher {
 	
 	private static final String WATCHER_SQL = "SELECT user_id from watchers WHERE repo_id = %id% ORDER BY user_id";
 	private static final String FORK_SQL = "SELECT owner_id FROM projects WHERE forked_from = %id% ORDER BY owner_id";
+	private static final String PR_SQL = "SELECT DISTINCT user_id FROM pull_requests WHERE base_repo_id = %id% ORDER BY user_id";
+	private static final String MEMBER_SQL = "SELECT user_id FROM project_members WHERE repo_id = %id% ORDER BY user_id";
+	private static final String ISSUE_COMMENT_SQL = "SELECT DISTINCT user_id FROM issue_comments where issue_id in (SELECT issue_id FROM issues WHERE repo_id = %id%) ORDER BY user_id";
+
 	
 	private static ResultSet users;
 	private static int USER_COUNT;
@@ -80,11 +84,12 @@ public class MySQLFetcher {
 	public static void main(String[] args) throws SQLException {
 		MySQLFetcher fetcher = new MySQLFetcher();
 
-		ArrayRealVector s = fetcher.getForkVector(1);
-		ArrayRealVector s2 = fetcher.getForkVector(2);
+		ArrayRealVector s = fetcher.getMemberVector(2);
+		ArrayRealVector s2 = fetcher.getMemberVector(2);
 		System.out.println(s.cosine(s2));
 		System.out.println(s.dotProduct(s));
 		System.out.println(s.getDistance(s));
+		System.out.println(s.getMaxIndex());
 		fetcher.close();
 	}
 	
@@ -94,6 +99,7 @@ public class MySQLFetcher {
 			ResultSet watchers = stmt2.executeQuery(SQL.replace("%id%", repoId+""));
 			if(watchers.next()){
 				int i = 0;
+				users.beforeFirst();
 				while (users.next()) {
 					long id = users.getLong(1);
 					if (watchers.getLong(1) == id) {
@@ -105,7 +111,6 @@ public class MySQLFetcher {
 					i++;
 				}
 			}
-			users.beforeFirst();
 			return new ArrayRealVector(ints);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -119,6 +124,18 @@ public class MySQLFetcher {
 	
 	public ArrayRealVector getForkVector(long repoId) {
 		return getUserVector(repoId, FORK_SQL);
+	}
+	
+	public ArrayRealVector getPRVector(long repoId) {
+		return getUserVector(repoId, PR_SQL);
+	}
+	
+	public ArrayRealVector getIssueCommentVector(long repoId) {
+		return getUserVector(repoId, ISSUE_COMMENT_SQL);
+	}
+	
+	public ArrayRealVector getMemberVector(long repoId) {
+		return getUserVector(repoId, MEMBER_SQL);
 	}
 
 	public int countWatchedBySameNum(long ghid1, long ghid2) {
