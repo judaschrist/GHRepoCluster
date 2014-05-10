@@ -20,6 +20,7 @@ public class GHRepository {
 	
 	public static final String NAME = "name";
 	public static final String DESCRIPTION = "description";
+	public static final String LANGUAGE = "language";
 	public static final String NUM = "num";
 	private final Node node;
 	
@@ -29,6 +30,10 @@ public class GHRepository {
 	
 	public Node getNode() {
 		return node;
+	}
+	
+	public String getLanguage() {
+		return (String)node.getProperty(LANGUAGE);
 	}
 	
 	public String getName() {
@@ -63,6 +68,10 @@ public class GHRepository {
         return s + " REPO:" + node.getId() + " GH:" + getGHid();
     }
 
+    public void setLanguage(String string) {
+		node.setProperty(LANGUAGE, string);
+	}
+    
 	public void setName(String string) {
 		node.setProperty(NAME, string);
 		
@@ -88,9 +97,9 @@ public class GHRepository {
 		} else if (rel.isType(GHRelType.FORKED_BY_SAME)) {
 			multiplier = 0;
 		} else if (rel.isType(GHRelType.ISSUE_COMMENTED_BY_SAME)) {
-			multiplier = 1;
-		} else if (rel.isType(GHRelType.PR_BY_SAME)) {
 			multiplier = 0;
+		} else if (rel.isType(GHRelType.PR_BY_SAME)) {
+			multiplier = 1;
 		} else if (rel.isType(GHRelType.MEMBER_BY_SAME)) {
 			multiplier = 0;
 		}

@@ -34,6 +34,12 @@ public class GHGraphBuilder {
     Map<Long, GHRepository> reposMap = new HashMap<Long, GHRepository>();
     String inString;
 
+	public static void main(String[] args) {
+		GHGraphBuilder hello = new GHGraphBuilder();
+		hello.createDb();
+		hello.shutDown();
+	}
+    
     public GHGraphBuilder() {
     	if (graphDb == null) {
         	graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( DB_PATH );
@@ -65,8 +71,6 @@ public class GHGraphBuilder {
     void createDb()
     {
         
-        
-        
         // START SNIPPET: transaction
 //    	addWatchedBySameRel();
 //    	addForkedBySameRel();
@@ -74,7 +78,7 @@ public class GHGraphBuilder {
 //    	addBySameDist();
         try (Transaction tx = graphDb.beginTx())
         {
-
+        	
 //        	generateRepoNodes();
 //        	System.out.println(inString);
         	
@@ -85,7 +89,7 @@ public class GHGraphBuilder {
 //				System.out.println(ghRepository.toString());
 //			}
             
-            long ghid = 25875;
+            long ghid = 27504;
             System.out.println();
             System.out.println();
             List<GHRepository> relatedRepos = getMostRelatedRepos(reposMap.get(ghid));
@@ -152,7 +156,7 @@ public class GHGraphBuilder {
     class relComparator implements Comparator<Relationship> {
 		@Override
 		public int compare(Relationship o1, Relationship o2) {
-			return (int) (GHRepository.getScore(o1) - GHRepository.getScore(o2));
+			return Double.compare(GHRepository.getScore(o1), GHRepository.getScore(o2));
 		}    	
     }
     
@@ -266,7 +270,7 @@ public class GHGraphBuilder {
 	
 	private void generateRepoNodes() {
 		MySQLFetcher fetcher = new MySQLFetcher();
-		ResultSet rs = fetcher.getColumn("projects", "id, url, name, description", "forked_from IS null");
+		ResultSet rs = fetcher.getColumn("projects", "id, url, name, description, language", "forked_from IS null");
 		try {
 			createNodesFromSqlResult(rs);
 		} catch (SQLException e) {
@@ -290,12 +294,6 @@ public class GHGraphBuilder {
 		}		
 	}
 
-	public static void main(String[] args) {
-		GHGraphBuilder hello = new GHGraphBuilder();
-        hello.createDb();
-        hello.shutDown();
-	}
-	
 	public void shutDown()
     {
         System.out.println();
