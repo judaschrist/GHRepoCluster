@@ -9,6 +9,8 @@ import java.util.Properties;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 
+import scala.annotation.meta.field;
+
 public class MySQLFetcher {
 	private Connection conn = null;
 	private Statement stmt = null;
@@ -31,6 +33,9 @@ public class MySQLFetcher {
 	private static final String MEMBER_SQL = "SELECT user_id FROM project_members WHERE repo_id = %id% ORDER BY user_id";
 	private static final String ISSUE_COMMENT_SQL = "SELECT DISTINCT user_id FROM issue_comments where issue_id in (SELECT issue_id FROM issues WHERE repo_id = %id%) ORDER BY user_id";
 
+	private static final String PROJECT_SELECT_SQL = "SELECT p.id, p.url, p.`name`, p.description, p.`language` from projects p, " +
+			"(SELECT DISTINCT forked_from from projects) a " +
+			"WHERE a.forked_from = p.id AND p.forked_from IS NULL;";
 	
 	private static ResultSet users;
 	private static int USER_COUNT;
@@ -42,14 +47,14 @@ public class MySQLFetcher {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection(
-					"jdbc:mysql://localhost:3306/msr14", connectionProps);
+					"jdbc:mysql://localhost:3306/gh", connectionProps);
 			stmt = conn.createStatement();
-			stmt1 = conn.createStatement();
-			stmt2 = conn.createStatement();
-			users = conn.createStatement().executeQuery("SELECT id from users order by id");
-			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
-			counts.next();
-			USER_COUNT = counts.getInt(1);
+//			stmt1 = conn.createStatement();
+//			stmt2 = conn.createStatement();
+//			users = conn.createStatement().executeQuery("SELECT id from users order by id");
+//			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
+//			counts.next();
+//			USER_COUNT = counts.getInt(1);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -66,6 +71,15 @@ public class MySQLFetcher {
 					+ formName
 					+ " WHERE "
 					+ condition);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public ResultSet getProjectColumns() {
+		try {
+			return stmt.executeQuery(PROJECT_SELECT_SQL);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
