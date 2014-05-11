@@ -59,13 +59,15 @@ public class GHRepository {
     @Override
     public String toString()
     {
-//    	Iterator<String> it = node.getPropertyKeys().iterator();
-    	String s = node.getProperty(NAME)+":\t"+node.getProperty(DESCRIPTION);
-//    	while (it.hasNext()) {
-//			String key = it.next();
-//			s += key + ":" + node.getProperty(key) + ", ";
-//		}
-        return s + " REPO:" + node.getId() + " GH:" + getGHid();
+    	Iterator<String> it = node.getPropertyKeys().iterator();
+    	String s = ""; 
+    	//= node.getProperty(NAME)+":\t"+node.getProperty(DESCRIPTION);
+    	while (it.hasNext()) {
+			String key = it.next();
+			s += key + ":" + node.getProperty(key) + ", ";
+		}
+        return s;
+        		//+ " REPO:" + node.getId() + " GH:" + getGHid();
     }
 
     public void setLanguage(String string) {
@@ -95,11 +97,11 @@ public class GHRepository {
 		if (rel.isType(GHRelType.WATCHED_BY_SAME)) {
 			multiplier = 0;
 		} else if (rel.isType(GHRelType.FORKED_BY_SAME)) {
-			multiplier = 0;
+			multiplier = 1;
 		} else if (rel.isType(GHRelType.ISSUE_COMMENTED_BY_SAME)) {
 			multiplier = 0;
 		} else if (rel.isType(GHRelType.PR_BY_SAME)) {
-			multiplier = 1;
+			multiplier = 0;
 		} else if (rel.isType(GHRelType.MEMBER_BY_SAME)) {
 			multiplier = 0;
 		}

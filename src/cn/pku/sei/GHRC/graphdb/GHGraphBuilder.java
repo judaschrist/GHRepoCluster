@@ -16,6 +16,8 @@ import java.util.Map;
 
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.linear.ArrayRealVector;
+import org.neo4j.cypher.internal.compiler.v1_9.commands.And;
+import org.neo4j.cypher.internal.compiler.v1_9.commands.expressions.Count;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -27,7 +29,10 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import cn.pku.sei.GHRC.graphdb.GHRepository.GHRelType;
 
 public class GHGraphBuilder {
-    private static final String DB_PATH = "D:/Documents/neo4j/CompleteGHRepos";
+	private static final String WHOLE_GH_DB = "CompleteGHRepos";
+	private static final String MSR14_GH_DB = "MSR14ReposCosineSim";
+	
+    private static final String DB_PATH = "D:/Documents/neo4j/" + MSR14_GH_DB;
     String greeting;
     // START SNIPPET: vars
     private GraphDatabaseService graphDb = null;
@@ -45,23 +50,23 @@ public class GHGraphBuilder {
         	graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( DB_PATH );
         	registerShutdownHook(graphDb);
 		}
-//    	try (Transaction tx = graphDb.beginTx())
-//        {
-//	    	Iterator<Node> nodesIt = GlobalGraphOperations.at(graphDb).getAllNodes().iterator();
-//	        while (nodesIt.hasNext()) {
-//				GHRepository tempRepository = new GHRepository(nodesIt.next());
-//				reposMap.put(Long.parseLong(tempRepository.getGHid()), tempRepository);
-//			}
-//			
-//			Iterator<GHRepository> repoIt = reposMap.values().iterator();
-//			inString = "(" + repoIt.next().getGHid();
-//            while (repoIt.hasNext()) {
-//				GHRepository ghRepository = repoIt.next();
-//				inString += "," + ghRepository.getGHid();
-//			}
-//			inString += ")";
-//	        tx.success();
-//        }
+    	try (Transaction tx = graphDb.beginTx())
+        {
+	    	Iterator<Node> nodesIt = GlobalGraphOperations.at(graphDb).getAllNodes().iterator();
+	        while (nodesIt.hasNext()) {
+				GHRepository tempRepository = new GHRepository(nodesIt.next());
+				reposMap.put(Long.parseLong(tempRepository.getGHid()), tempRepository);
+			}
+			
+			Iterator<GHRepository> repoIt = reposMap.values().iterator();
+			inString = "(" + repoIt.next().getGHid();
+            while (repoIt.hasNext()) {
+				GHRepository ghRepository = repoIt.next();
+				inString += "," + ghRepository.getGHid();
+			}
+			inString += ")";
+	        tx.success();
+        }
 	}
 
     public GraphDatabaseService getGraphDb() {
@@ -76,20 +81,45 @@ public class GHGraphBuilder {
 //    	addForkedBySameRel();
 //    	addBySameRels();
 //    	addBySameDist();
+
+//    	generateRepoNodes();
         try (Transaction tx = graphDb.beginTx())
         {
-        	
-        	generateRepoNodes();
+//        	Iterator<Node> iterator = GlobalGraphOperations.at(graphDb).getAllNodes().iterator();
+
 //        	System.out.println(inString);
         	
 //            Iterator<GHRepository> repoIt = reposMap.values().iterator();
+//            System.out.println(IteratorUtil.count(repoIt));
         	
 //            while (repoIt.hasNext()) {
 //				GHRepository ghRepository = (GHRepository) repoIt.next();
 //				System.out.println(ghRepository.toString());
 //			}
             
-//            long ghid = 27504;
+        	File file = new File("forked_recs.csv");
+        	try {
+				BufferedWriter writer = new BufferedWriter(new FileWriter(file));	        	
+	        	Iterable<Node> iterable = GlobalGraphOperations.at(graphDb).getAllNodes();
+	        	for (Node node : iterable) {
+					GHRepository repository = new GHRepository(node);
+					System.out.println(repository);
+					writer.write(repository.getName());
+		            List<GHRepository> relatedRepos = getMostRelatedRepos(repository);
+		            int l = relatedRepos.size();
+		            for (int i = 0; i < 5 && i < l; i++) {
+						writer.write("," + relatedRepos.get(l - i - 1).getName());
+					}
+		            writer.newLine();
+				}
+	        	writer.close();
+	        	
+        	} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+//            long ghid = 74915;
 //            System.out.println();
 //            System.out.println();
 //            List<GHRepository> relatedRepos = getMostRelatedRepos(reposMap.get(ghid));
@@ -287,14 +317,34 @@ public class GHGraphBuilder {
 			colNames[i] = temp.equals("id") ? "gh-" + temp : temp;
 		}
 		String value = null;
-		while (rs.next()) {
-			Node node = graphDb.createNode();
-			for (int i = 1; i <= propCount; i++) {
-				value = rs.getString(i);
-				value = value == null ? "":value;
-				node.setProperty(colNames[i], value);
+		int count;
+		int total = 0;
+		int step = 5000;
+		while (true) {
+			System.out.println(total);
+			count = 0;
+			try (Transaction tx = graphDb.beginTx()){
+				while (count < step) {
+					if (!rs.next()) {
+						break;
+					}
+					Node node = graphDb.createNode();
+					for (int i = 1; i <= propCount; i++) {
+						value = rs.getString(i);
+						value = value == null ? "":value;
+						node.setProperty(colNames[i], value);
+					}
+					count++;
+					total++;
+				}
+				
+				tx.success();
 			}
-		}		
+			if (count < step) {
+				break;
+			}
+		}
+		
 	}
 
 	public void shutDown()
