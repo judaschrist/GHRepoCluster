@@ -16,8 +16,6 @@ import java.util.Map;
 
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.neo4j.cypher.internal.compiler.v1_9.commands.And;
-import org.neo4j.cypher.internal.compiler.v1_9.commands.expressions.Count;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -71,7 +69,59 @@ public class GHGraphBuilder {
 
     public GraphDatabaseService getGraphDb() {
     	return graphDb;
-    }
+    }   
+    
+	public void listAllRecResults() {
+		File file = new File("all" + ".csv");
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));	      
+			writer.write("Project,1st,2nd,3rd,4th,5th");
+			writer.newLine();
+			Iterable<Node> iterable = GlobalGraphOperations.at(graphDb).getAllNodes();
+			for (Node node : iterable) {
+				GHRepository repository = new GHRepository(node);
+				System.out.println(repository);
+				writer.write(repository.getName());
+				writer.newLine();
+				GHRelType[] types = GHRelType.values();
+				for (GHRelType ghRelType : types) {
+					writer.write(ghRelType.toString());
+			        List<GHRepository> relatedRepos = getMostRelatedRepos(repository, ghRelType);
+			        int l = relatedRepos.size();
+//			        System.out.println(l);
+			        for (int i = 0; i < 5 && i < l; i++) {
+						writer.write("," + relatedRepos.get(l - i - 1).getName());
+					}
+			        writer.newLine();
+				}
+			}
+			writer.close();			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}   
+
+	public void listRecResults(GHRelType type) {
+		File file = new File(type + ".csv");
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));	        	
+			Iterable<Node> iterable = GlobalGraphOperations.at(graphDb).getAllNodes();
+			for (Node node : iterable) {
+				GHRepository repository = new GHRepository(node);
+				System.out.println(repository);
+				writer.write(repository.getName());
+		        List<GHRepository> relatedRepos = getMostRelatedRepos(repository, type);
+		        int l = relatedRepos.size();
+		        for (int i = 0; i < 5 && i < l; i++) {
+					writer.write("," + relatedRepos.get(l - i - 1).getName());
+				}
+		        writer.newLine();
+			}
+			writer.close();			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}   
     
     void createDb()
     {
@@ -97,27 +147,8 @@ public class GHGraphBuilder {
 //				System.out.println(ghRepository.toString());
 //			}
             
-        	File file = new File("forked_recs.csv");
-        	try {
-				BufferedWriter writer = new BufferedWriter(new FileWriter(file));	        	
-	        	Iterable<Node> iterable = GlobalGraphOperations.at(graphDb).getAllNodes();
-	        	for (Node node : iterable) {
-					GHRepository repository = new GHRepository(node);
-					System.out.println(repository);
-					writer.write(repository.getName());
-		            List<GHRepository> relatedRepos = getMostRelatedRepos(repository);
-		            int l = relatedRepos.size();
-		            for (int i = 0; i < 5 && i < l; i++) {
-						writer.write("," + relatedRepos.get(l - i - 1).getName());
-					}
-		            writer.newLine();
-				}
-	        	writer.close();
-	        	
-        	} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	listAllRecResults();
+//        	listRecResults(GHRelType.FORKED_BY_SAME);
         	
 //            long ghid = 74915;
 //            System.out.println();
@@ -146,7 +177,8 @@ public class GHGraphBuilder {
            
             tx.success();
         }
-    }    
+    }
+ 
 	
 	private void addBySameRels() {
 		MySQLFetcher fetcher = new MySQLFetcher();
@@ -190,11 +222,13 @@ public class GHGraphBuilder {
 		}    	
     }
     
-	public List<GHRepository> getMostRelatedRepos(GHRepository ghRepository) {
+	public List<GHRepository> getMostRelatedRepos(GHRepository ghRepository, GHRelType type) {
 		Node node = ghRepository.getNode();
-		List<GHRepository> repos = new ArrayList<GHRepository>();
+		List<GHRepository> repos = new ArrayList<>();
 		List<Relationship> rels = new ArrayList<>();
-		IteratorUtil.addToCollection(node.getRelationships(), rels);
+		System.out.println(ghRepository.getNode().getDegree(type));
+		System.out.println(type.toString() + IteratorUtil.count(node.getRelationships(type)));
+		IteratorUtil.addToCollection(node.getRelationships(type), rels);
 		Collections.sort(rels, new relComparator());
 		for (Relationship relationship : rels) {
 			repos.add(new GHRepository(relationship.getOtherNode(node)));
