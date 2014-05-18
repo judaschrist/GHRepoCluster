@@ -86,11 +86,12 @@ public class GHGraphBuilder {
 				GHRelType[] types = GHRelType.values();
 				for (GHRelType ghRelType : types) {
 					writer.write(ghRelType.toString());
-			        List<GHRepository> relatedRepos = getMostRelatedRepos(repository, ghRelType);
+			        List<Relationship> relatedRepos = getMostRelatedRepos(repository, ghRelType);
 			        int l = relatedRepos.size();
 //			        System.out.println(l);
 			        for (int i = 0; i < 5 && i < l; i++) {
-						writer.write("," + relatedRepos.get(l - i - 1).getName());
+			        	Relationship rel = relatedRepos.get(l - i - 1);
+						writer.write("," + rel.getOtherNode(node).getProperty(GHRepository.NAME) + "," + rel.getProperty(GHRepository.NUM));
 					}
 			        writer.newLine();
 				}
@@ -110,10 +111,10 @@ public class GHGraphBuilder {
 				GHRepository repository = new GHRepository(node);
 				System.out.println(repository);
 				writer.write(repository.getName());
-		        List<GHRepository> relatedRepos = getMostRelatedRepos(repository, type);
+		        List<Relationship> relatedRepos = getMostRelatedRepos(repository, type);
 		        int l = relatedRepos.size();
 		        for (int i = 0; i < 5 && i < l; i++) {
-					writer.write("," + relatedRepos.get(l - i - 1).getName());
+					writer.write("," + relatedRepos.get(l - i - 1).getOtherNode(node).getProperty(GHRepository.NAME));
 				}
 		        writer.newLine();
 			}
@@ -148,7 +149,7 @@ public class GHGraphBuilder {
 //			}
             
         	listAllRecResults();
-//        	listRecResults(GHRelType.FORKED_BY_SAME);
+//        	listRecResults(GHRelType.ISSUE_COMMENTED_BY_SAME);
         	
 //            long ghid = 74915;
 //            System.out.println();
@@ -222,18 +223,14 @@ public class GHGraphBuilder {
 		}    	
     }
     
-	public List<GHRepository> getMostRelatedRepos(GHRepository ghRepository, GHRelType type) {
+	public List<Relationship> getMostRelatedRepos(GHRepository ghRepository, GHRelType type) {
 		Node node = ghRepository.getNode();
-		List<GHRepository> repos = new ArrayList<>();
 		List<Relationship> rels = new ArrayList<>();
 		System.out.println(ghRepository.getNode().getDegree(type));
 		System.out.println(type.toString() + IteratorUtil.count(node.getRelationships(type)));
 		IteratorUtil.addToCollection(node.getRelationships(type), rels);
 		Collections.sort(rels, new relComparator());
-		for (Relationship relationship : rels) {
-			repos.add(new GHRepository(relationship.getOtherNode(node)));
-		}
-		return repos;
+		return rels;
 	}
 
 	private void printToCSV(GHRepository ghRepository) {
