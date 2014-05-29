@@ -148,8 +148,8 @@ public class GHGraphBuilder {
 //				System.out.println(ghRepository.toString());
 //			}
             
-        	listAllRecResults();
-//        	listRecResults(GHRelType.ISSUE_COMMENTED_BY_SAME);
+//        	listAllRecResults();
+        	listRecResults(GHRelType.ISSUE_COMMENTED_BY_SAME);
         	
 //            long ghid = 74915;
 //            System.out.println();
@@ -215,13 +215,6 @@ public class GHGraphBuilder {
 		}
 		fetcher.close();
 	}
-
-    class relComparator implements Comparator<Relationship> {
-		@Override
-		public int compare(Relationship o1, Relationship o2) {
-			return Double.compare(GHRepository.getScore(o1), GHRepository.getScore(o2));
-		}    	
-    }
     
 	public List<Relationship> getMostRelatedRepos(GHRepository ghRepository, GHRelType type) {
 		Node node = ghRepository.getNode();
@@ -229,7 +222,7 @@ public class GHGraphBuilder {
 		System.out.println(ghRepository.getNode().getDegree(type));
 		System.out.println(type.toString() + IteratorUtil.count(node.getRelationships(type)));
 		IteratorUtil.addToCollection(node.getRelationships(type), rels);
-		Collections.sort(rels, new relComparator());
+		Collections.sort(rels, (rel1, rel2) -> Double.compare(GHRepository.getScore(rel1), GHRepository.getScore(rel2)));
 		return rels;
 	}
 

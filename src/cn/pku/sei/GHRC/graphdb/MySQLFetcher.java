@@ -47,14 +47,14 @@ public class MySQLFetcher {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection(
-					"jdbc:mysql://localhost:3306/gh", connectionProps);
+					"jdbc:mysql://localhost:3306/msr14", connectionProps);
 			stmt = conn.createStatement();
-//			stmt1 = conn.createStatement();
-//			stmt2 = conn.createStatement();
-//			users = conn.createStatement().executeQuery("SELECT id from users order by id");
-//			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
-//			counts.next();
-//			USER_COUNT = counts.getInt(1);
+			stmt1 = conn.createStatement();
+			stmt2 = conn.createStatement();
+			users = conn.createStatement().executeQuery("SELECT id from users order by id");
+			ResultSet counts = stmt.executeQuery("SELECT count(id) from users");
+			counts.next();
+			USER_COUNT = counts.getInt(1);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
