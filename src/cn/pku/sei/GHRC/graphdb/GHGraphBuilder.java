@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,7 +33,6 @@ public class GHGraphBuilder {
 	
     private static final String DB_PATH = "D:/Documents/neo4j/" + MSR14_GH_DB;
     String greeting;
-    // START SNIPPET: vars
     private GraphDatabaseService graphDb = null;
     Map<Long, GHRepository> reposMap = new HashMap<Long, GHRepository>();
     String inString;
@@ -72,31 +72,27 @@ public class GHGraphBuilder {
     }   
     
 	public void listAllRecResults() {
-		File file = new File("all" + ".csv");
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));	      
-			writer.write("Project,1st,2nd,3rd,4th,5th");
-			writer.newLine();
+		File file = new File("data/list_full" + ".csv");
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+//			writer.write("Project,1st,2nd,3rd,4th,5th");
+//			writer.newLine();
 			Iterable<Node> iterable = GlobalGraphOperations.at(graphDb).getAllNodes();
 			for (Node node : iterable) {
 				GHRepository repository = new GHRepository(node);
 				System.out.println(repository);
-				writer.write(repository.getName());
-				writer.newLine();
 				GHRelType[] types = GHRelType.values();
 				for (GHRelType ghRelType : types) {
-					writer.write(ghRelType.toString());
+					writer.write(repository.getName() + "," + ghRelType.toString().toUpperCase().charAt(0));
 			        List<Relationship> relatedRepos = getMostRelatedRepos(repository, ghRelType);
 			        int l = relatedRepos.size();
 //			        System.out.println(l);
-			        for (int i = 0; i < 5 && i < l; i++) {
+			        for (int i = 0; i < l; i++) {
 			        	Relationship rel = relatedRepos.get(l - i - 1);
-						writer.write("," + rel.getOtherNode(node).getProperty(GHRepository.NAME) + "," + rel.getProperty(GHRepository.NUM));
+						writer.write("," + rel.getProperty(GHRepository.NUM));
 					}
 			        writer.newLine();
 				}
-			}
-			writer.close();			
+			}			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -148,8 +144,8 @@ public class GHGraphBuilder {
 //				System.out.println(ghRepository.toString());
 //			}
             
-//        	listAllRecResults();
-        	listRecResults(GHRelType.ISSUE_COMMENTED_BY_SAME);
+        	listAllRecResults();
+//        	listRecResults(GHRelType.ISSUE_COMMENTED_BY_SAME);
         	
 //            long ghid = 74915;
 //            System.out.println();

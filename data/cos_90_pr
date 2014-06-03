@@ -1,0 +1,211 @@
+Cluster 0
+symfony:	The Symfony PHP framework REPO:65 GH:74915
+
+ALPHA = 0.5
+	ALPHA = 0.55
+		ALPHA = 0.72
+			storm:	Distributed and fault-tolerant realtime computation: stream processing, continuous computation, distributed RPC, and more REPO:35 GH:16402
+
+		ALPHA = 0.72
+			ALPHA = 0.86
+				ALPHA = 0.95
+					akka:	Akka Project REPO:0 GH:1
+					sbt:	sbt, a build tool for Scala REPO:86 GH:107187
+ 				ALPHA = 0.95
+					netty:	Netty project - an event-driven asynchronous network application framework REPO:41 GH:22981
+					finagle:	A fault tolerant, protocol-agnostic RPC system REPO:82 GH:106160
+
+			ALPHA = 0.86
+				scala:	The Scala programming language REPO:87 GH:107534
+				scalatra:	Tiny Scala high-performance, async web framework, inspired by Sinatra REPO:88 GH:107535
+
+	ALPHA = 0.5
+		kestrel:	simple, distributed message queue system REPO:83 GH:106161
+		flockdb:	A distributed, fault-tolerant graph database REPO:84 GH:107085
+		gizzard:	A flexible sharding framework for creating eventually-consistent distributed datastores REPO:85 GH:107186
+
+ALPHA = 0.59
+	ALPHA = 0.76
+		django:	The Web framework for perfectionists with deadlines. REPO:60 GH:69158
+		django-debug-toolbar:	A configurable set of panels that display various debug information about the current request/response. REPO:68 GH:76946
+		django-cms:	The easy-to-use and developer-friendly CMS REPO:70 GH:78835
+
+	ALPHA = 0.76
+		ALPHA = 0.94
+			tornado:	Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed. REPO:61 GH:71786
+		ALPHA = 0.94
+			httpie:	HTTPie is a CLI, cURL-like tool for humans. REPO:62 GH:71787
+			flask:	A microframework based on Werkzeug, Jinja2 and good intentions REPO:63 GH:72032
+			requests:	Python HTTP Requests for Humans™. REPO:64 GH:74914
+			boto:	Python interface to Amazon Web Services REPO:67 GH:76945
+
+ALPHA = 0.59
+	ALPHA = 0.72
+		elasticsearch:	Open Source, Distributed, RESTful Search Engine REPO:36 GH:17515
+
+	ALPHA = 0.72
+		ALPHA = 0.95
+			php-sdk:	We have created a new repository for this project: https://github.com/facebook/facebook-php-sdk.  Please update anything you have pointing at this repostory to this location before April 1, 2012. REPO:54 GH:62501
+		ALPHA = 0.95
+			Slim:	A PHP micro framework inspired by Sinatra REPO:59 GH:65107
+
+	ALPHA = 0.72
+		ALPHA = 0.76
+			cakephp:	CakePHP: The Rapid Development Framework for PHP - Official Repository REPO:56 GH:63250
+		ALPHA = 0.76
+			ALPHA = 0.9
+				ALPHA = 0.95
+				symfony:	The Symfony PHP framework REPO:52 GH:51671
+				ALPHA = 0.95
+					hiphop-php:	Virtual Machine, Runtime, and JIT for PHP REPO:4 GH:5
+					phpunit:	The PHP Unit Testing framework. REPO:58 GH:64918
+			ALPHA = 0.9
+				zf2:	Official Zend Framework 2 git repository REPO:55 GH:62502
+
+ALPHA = 0.59
+	ALPHA = 0.6
+		three.js:	JavaScript 3D library. REPO:50 GH:50618
+	ALPHA = 0.6
+		impress.js:	It's a presentation framework based on the power of CSS3 transforms and transitions in modern browsers and inspired by the idea behind prezi.com. REPO:46 GH:27504
+
+ALPHA = 0.59
+	ALPHA = 0.8
+		CodeIgniter:	EllisLab's Open Source PHP Framework REPO:53 GH:59607
+	ALPHA = 0.8
+		html5-boilerplate:	A professional front-end template for building fast, robust, and adaptable web apps or sites. REPO:45 GH:26388
+	ALPHA = 0.8
+		jquery:	jQuery JavaScript Library REPO:44 GH:25875
+
+ALPHA = 0.59
+	Font-Awesome:	The iconic font designed for Bootstrap REPO:49 GH:49675
+
+ALPHA = 0.59
+	ALPHA = 0.66
+		folly:	Folly is an open-source C++ library developed and used at Facebook. REPO:7 GH:8
+	ALPHA = 0.66
+		xbmc:	XBMC Main Repository REPO:15 GH:3583
+	ALPHA = 0.66
+		Sick-Beard:	PVR & episode guide that downloads and manages all your TV shows  REPO:69 GH:77319
+
+ALPHA = 0.59
+	bitcoin:	Bitcoin integration/staging tree REPO:13 GH:454
+
+ALPHA = 0.59
+	mosh:	Mobile Shell REPO:14 GH:3437
+
+ALPHA = 0.59
+	SparkleShare:	SparkleShare is an Open Source collaboration and sharing tool that is designed to keep things simple and to stay out of your way. It allows you to instantly sync with Git repositories and is available for Linux distributions, Mac and Windows. REPO:26 GH:12554
+	blueprint-css:	A CSS framework that aims to cut down on your CSS development time REPO:77 GH:101472
+
+ALPHA = 0.59
+	ALPHA = 0.66
+		plupload:	Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering, request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight and F REPO:27 GH:12976
+
+	ALPHA = 0.66
+		mongo:	The Mongo Database REPO:8 GH:9
+		beanstalkd:	Beanstalk is a simple, fast work queue. REPO:17 GH:5326
+		memcached:	memcached development tree REPO:20 GH:8955
+
+	ALPHA = 0.66
+		ALPHA = 0.82
+			phantomjs:	Scriptable Headless WebKit REPO:10 GH:11
+			node:	evented I/O for v8 javascript REPO:43 GH:24292
+			homebrew:	The missing package manager for OS X. REPO:72 GH:79163
+
+		ALPHA = 0.82
+			ALPHA = 0.84
+				http-parser:	http request/response parser for c REPO:16 GH:3750
+				redis:	Redis is an in-memory database that persists on disk. The data model is key-value, but many different kind of values are supported: Strings, Lists, Sets, Sorted Sets, Hashes REPO:18 GH:7242
+				libgit2:	The Library REPO:22 GH:9636
+				libuv:	Cross-platform asychronous I/O REPO:24 GH:10593
+			ALPHA = 0.84
+				d3:	A JavaScript visualization library for HTML and SVG. REPO:47 GH:42644
+
+ALPHA = 0.59
+	ALPHA = 0.8
+		redcarpet:	The safe Markdown parser, reloaded. REPO:23 GH:10380
+		MiniProfiler:	A simple but effective mini-profiler for ASP.NET MVC, ASP.NET and Ruby. REPO:34 GH:16134
+
+	ALPHA = 0.8
+		ALPHA = 0.88
+			devise:	Flexible authentication solution for Rails with Warden. REPO:76 GH:95385
+			paperclip:	Easy file attachment management for ActiveRecord REPO:80 GH:104307
+		ALPHA = 0.88
+			ALPHA = 0.92
+				compass:	Compass is a Stylesheet Authoring Environment that makes your website design simpler to implement and easier to maintain. REPO:81 GH:105378
+			ALPHA = 0.92
+				rails:	Ruby on Rails REPO:71 GH:78852
+				jekyll:	Jekyll is a blog-aware, static site generator in Ruby REPO:73 GH:79166
+				octopress:	Octopress is an obsessively designed framework for Jekyll blogging. It’s easy to configure and easy to deploy. Sweet huh? REPO:78 GH:101997
+
+	ALPHA = 0.8
+		diaspora:	Distributed and contextual social networking REPO:75 GH:91331
+	ALPHA = 0.8
+		gitlabhq:	Project management and code hosting  application. Follow us on twitter @gitlabhq REPO:74 GH:91020
+	ALPHA = 0.8
+		foundation:	The most advanced responsive front-end framework in the world. Quickly create prototypes and production code for sites and apps that work on any kind of device. REPO:51 GH:51669
+		chosen:	Chosen is a library for making long, unwieldy select boxes more friendly. REPO:48 GH:47382
+
+ALPHA = 0.59
+	clojure:	The Clojure programming language REPO:39 GH:19786
+
+ALPHA = 0.55
+	ALPHA = 0.7
+		facebook-android-sdk:	Facebook SDK for Android REPO:38 GH:19580
+	ALPHA = 0.7
+		ActionBarSherlock:	Library for implementing the action bar design pattern using the native action bar on Android 4.0+ and a custom implementation on pre-4.0 through a single API and theme. REPO:37 GH:17566
+		android:	GitHub Android App REPO:42 GH:23781
+
+ALPHA = 0.5
+	ALPHA = 0.7
+		CraftBukkit:	The Minecraft Server Mod API Implementation REPO:40 GH:22980
+	ALPHA = 0.7
+		reddit:	the code that powers reddit.com REPO:66 GH:75984
+	ALPHA = 0.7
+		zipkin:	Zipkin is a distributed tracing system REPO:89 GH:107672
+
+ALPHA = 0.5
+	doom3.gpl:	Doom 3 GPL source release REPO:9 GH:10
+	openFrameworks:	OpenFrameworks is a cross platform open source toolkit for creative coding in C++. REPO:21 GH:9215
+
+ALPHA = 0.5
+	ALPHA = 0.66
+		ALPHA = 0.86
+			ALPHA = 0.92
+				SignalR:	Incredibly simple real-time web for .NET REPO:25 GH:10629
+				ServiceStack:	Thoughtfully architected, obscenely fast, thoroughly enjoyable web services for all REPO:30 GH:14328
+				RestSharp:	Simple REST and HTTP API Client for .NET REPO:32 GH:15018
+			ALPHA = 0.92
+				mono:	Mono open source ECMA CLI, C# and .NET implementation. REPO:28 GH:13566
+
+		ALPHA = 0.86
+			Nancy:	Lightweight, low-ceremony, framework for building HTTP based services on .Net and Mono REPO:29 GH:14327
+			AutoMapper:	A convention-based object-object mapper in .NET.  REPO:31 GH:14912
+			ravendb:	A linq enabled document database for .NET REPO:33 GH:15974
+
+	ALPHA = 0.66
+		ThinkUp:	ThinkUp gives you insights into your social networking activity on Twitter, Facebook, Foursquare, Google+, and beyond. REPO:57 GH:64176
+
+ALPHA = 0.5
+	devtools:	Tools to make an R developer's life easier REPO:1 GH:2
+	knitr:	A general-purpose tool for dynamic report generation in R REPO:5 GH:6
+	shiny:	Easy interactive web applications with R REPO:6 GH:7
+
+Cluster 53
+ccv:	C-based/Cached/Core Computer Vision Library, A Modern Computer Vision Library REPO:19 GH:7427
+
+ALPHA = 0.5
+	TrinityCore:	TrinityCore Open Source MMO Framework REPO:11 GH:12
+	MaNGOS:	This is the master Information repository for MaNGOS REPO:12 GH:289
+
+Cluster 55
+vinc.cc:	Personal website (powered by Octopress) REPO:79 GH:104306
+
+Cluster 56
+Bukkit:	 REPO:90 GH:108342
+
+Cluster 57
+stat-cookbook:	The probability and statistics cookbook REPO:3 GH:4
+
+Cluster 58
+ProjectTemplate:	A template utility for R projects that provides a skeletal project. REPO:2 GH:3

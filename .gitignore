@@ -8,7 +8,6 @@
 bin/
 tmp/
 lib/
-data/
 *.tmp
 *.bak
 *.swp
