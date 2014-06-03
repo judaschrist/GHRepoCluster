@@ -85,10 +85,16 @@ public class GHGraphBuilder {
 					writer.write(repository.getName() + "," + ghRelType.toString().toUpperCase().charAt(0));
 			        List<Relationship> relatedRepos = getMostRelatedRepos(repository, ghRelType);
 			        int l = relatedRepos.size();
+			        int max = 90;
 //			        System.out.println(l);
-			        for (int i = 0; i < l; i++) {
-			        	Relationship rel = relatedRepos.get(l - i - 1);
-						writer.write("," + rel.getProperty(GHRepository.NUM));
+			        for (int i = 0; i < max; i++) {
+			        	int index = l - i - 1;
+			        	if (index >= 0) {
+				        	Relationship rel = relatedRepos.get(l - i - 1);
+							writer.write("," + rel.getProperty(GHRepository.NUM));
+						} else {
+							writer.write("," + 0);
+						}
 					}
 			        writer.newLine();
 				}
